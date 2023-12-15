@@ -1,15 +1,14 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2023-12-03T00:06:22
+# Project created by QtCreator 2023-12-15T15:50:33
 #
 #-------------------------------------------------
 
 QT       += core gui
-QT += network
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = untitled
+TARGET = github_hosts
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -33,3 +32,4 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui
+QT += network
