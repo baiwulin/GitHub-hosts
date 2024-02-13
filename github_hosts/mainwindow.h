@@ -16,6 +16,7 @@
 #include <QDir>
 #include <Windows.h>
 #include <QFile>
+#include <QFileInfo>
 #include <QDir>
 #include <QCoreApplication>
 #include <QProcess>
@@ -50,6 +51,7 @@ private slots:
     void on_checkBox_clicked();
     void fetchversion();
     void fetchupdate();
+    void changehost();
 
 
 private:
@@ -59,8 +61,10 @@ private:
     QMenu *trayMenu;
     QSettings *settings;
     QTimer *timer_version;
+    QTimer *timer_host;
     QNetworkAccessManager *manager_version;
     QNetworkAccessManager *manager_update;
+    QNetworkAccessManager *manager_host;
 };
 
 #endif // MAINWINDOW_H

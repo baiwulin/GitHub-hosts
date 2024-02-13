@@ -37,3 +37,7 @@ FORMS += \
 
 RESOURCES += \
     icon.qrc
+
+DISTFILES += \
+    UAC.manifest \
+    admin.rc
