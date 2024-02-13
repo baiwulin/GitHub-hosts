@@ -96,7 +96,7 @@ void MainWindow::on_checkBox_clicked()
     }
     else{
         settings->setValue("main/checkbox","false");
-        setAutoStart(true);
+        setAutoStart(false);
         QMessageBox::information(nullptr, "Information", "取消成功");
     }
 
@@ -229,8 +229,8 @@ void MainWindow::changehost(){
                file.close();
                qDebug() << "backup host to file:" << fileName;
 
-               int startIndex = systemhost.indexOf("#start");
-               int endIndex = systemhost.indexOf("#end");
+               int startIndex = systemhost.indexOf("# GitHub520 Host Start");
+               int endIndex = systemhost.indexOf("# GitHub520 Host End");
                if (startIndex == -1 || endIndex == -1){
                systemhost.append("\n").append(newhost);
                }else{
