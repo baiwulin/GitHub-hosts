@@ -1,14 +1,16 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2023-12-15T15:50:33
+# Project created by QtCreator 2024-02-08T08:03:24
 #
 #-------------------------------------------------
 
 QT       += core gui
+QT +=network
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = github_hosts
+TARGET = gitub_hosts
 TEMPLATE = app
 
 # The following define makes your compiler emit warnings if you use
@@ -32,4 +34,6 @@ HEADERS += \
 
 FORMS += \
         mainwindow.ui
-QT += network
+
+RESOURCES += \
+    icon.qrc
