@@ -50,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     MainWindow::fetchversion();
     timer_host=new QTimer(this);
     connect( timer_version, &QTimer::timeout, this, &MainWindow::changehost);
-    timer_version->start(600 * 1000);
+    timer_host->start(600 * 1000);
     MainWindow::changehost();
 }
 
@@ -137,6 +137,8 @@ void MainWindow::fetchversion()
                 qDebug()<<"\nforce:\n"<<force;
                 if(version!="1.0.0"){
                     if(force!="ture"){
+                        this->show();
+                        this->hide();
                         QMessageBox::StandardButton rb;
                         rb = QMessageBox::question(this, "是否要更新", "有更新\n版本:"+version+"\n日志:\n"+log);
                         qDebug() << "newversion:" << version;
@@ -144,10 +146,13 @@ void MainWindow::fetchversion()
                             // "是"
                             this->show();
                             MainWindow::fetchupdate();
+                        }else{
+                            this->show();
                         }
 
-
                     }else{
+                        this->show();
+                        this->hide();
                         QMessageBox::StandardButton rb;
                         rb = QMessageBox::question(this, "是否要更新", "有更新\n版本:"+version+"\n日志:\n"+log);
                         qDebug() << "newversion:" << version;
@@ -237,7 +242,7 @@ void MainWindow::changehost(){
                if (startIndex == -1 || endIndex == -1){
                systemhost.append("\n").append(newhost);
                }else{
-                   systemhost.replace(startIndex, endIndex - startIndex + 5, newhost);
+                   systemhost.replace(startIndex, endIndex - startIndex + 22, newhost);
                }
                QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
                if (file_host.open(QIODevice::WriteOnly | QIODevice::Text)){
