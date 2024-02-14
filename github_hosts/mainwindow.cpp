@@ -142,6 +142,7 @@ void MainWindow::fetchversion()
                         qDebug() << "newversion:" << version;
                         if (rb == QMessageBox::Yes) {
                             // "是"
+                            this->show();
                             MainWindow::fetchupdate();
                         }
 
@@ -152,9 +153,11 @@ void MainWindow::fetchversion()
                         qDebug() << "newversion:" << version;
                         if (rb == QMessageBox::Yes) {
                             // "是"
-                            MainWindow::fetchupdate();
+                             this->show();
+                             MainWindow::fetchupdate();
                         }else{
-                            this->close();
+                             this->show();
+                             this->close();
                         }
 
                     }
