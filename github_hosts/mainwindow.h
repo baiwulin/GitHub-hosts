@@ -54,6 +54,8 @@ private slots:
     void changehost();
 
 
+    void on_pushButton_sure_clicked();
+
 private:
     Ui::MainWindow *ui;
     void setAutoStart(bool enable);

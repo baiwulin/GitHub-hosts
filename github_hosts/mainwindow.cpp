@@ -263,3 +263,8 @@ void MainWindow::changehost(){
     });
     file_host.close();
 }
+
+void MainWindow::on_pushButton_sure_clicked()
+{
+    this->hide();
+}

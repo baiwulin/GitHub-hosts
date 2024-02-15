@@ -24,6 +24,9 @@
     </item>
     <item row="2" column="0">
      <widget class="QPushButton" name="pushButton_sure">
+      <property name="cursor">
+       <cursorShape>ArrowCursor</cursorShape>
+      </property>
       <property name="text">
        <string>确定</string>
       </property>
@@ -31,16 +34,28 @@
     </item>
     <item row="2" column="1">
      <widget class="QPushButton" name="pushButton_cancel">
+      <property name="cursor">
+       <cursorShape>ArrowCursor</cursorShape>
+      </property>
       <property name="styleSheet">
        <string notr="true"/>
       </property>
       <property name="text">
        <string>取消</string>
       </property>
+      <property name="default">
+       <bool>false</bool>
+      </property>
+      <property name="flat">
+       <bool>false</bool>
+      </property>
      </widget>
     </item>
     <item row="1" column="1">
      <widget class="QComboBox" name="comboBox">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
       <item>
        <property name="text">
         <string>推荐(默认)</string>
