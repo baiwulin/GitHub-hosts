@@ -56,6 +56,8 @@ private slots:
 
     void on_pushButton_sure_clicked();
 
+    void on_pushButton_cancel_clicked();
+
 private:
     Ui::MainWindow *ui;
     void setAutoStart(bool enable);

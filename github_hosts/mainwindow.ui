@@ -41,7 +41,7 @@
        <string notr="true"/>
       </property>
       <property name="text">
-       <string>取消</string>
+       <string>退出</string>
       </property>
       <property name="default">
        <bool>false</bool>

@@ -16,7 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    QIcon icon = QIcon(":/new/prefix1/icon/图标.ico");
+    QIcon icon = QIcon(":/new/prefix1/icon/logo.ico");
     settings = new QSettings("setting.ini",QSettings::IniFormat);
     if(settings->value("main/checkbox").toString()=="true"){
         ui->checkBox->setChecked(true);
@@ -129,18 +129,21 @@ void MainWindow::fetchversion()
             QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
             if (!jsonDoc.isNull()) {
                 QJsonObject jsonObject = jsonDoc.object();
-                QString version = jsonObject["version"].toString();
-                QString log = jsonObject["log"].toString().replace("[change]", "\n");;
-                QString force = jsonObject["force"].toString();
+                int version = jsonObject["version"].toInt();
+                QString log = jsonObject["log"].toString().replace("[change]", "\n");
+                QString realname = jsonObject["name"].toString();
+                bool force = jsonObject["force"].toBool();
                 qDebug() << "Version:" << version;
+                 qDebug() << "\nrealVersion:" << realname;
                 qDebug()<<"\nlog:\n"<<log;
                 qDebug()<<"\nforce:\n"<<force;
-                if(version!="1.0.0"){
-                    if(force!="ture"){
+
+                if(version>1){
+                    if(force!=true){
                         this->show();
                         this->hide();
                         QMessageBox::StandardButton rb;
-                        rb = QMessageBox::question(this, "是否要更新", "有更新\n版本:"+version+"\n日志:\n"+log);
+                        rb = QMessageBox::question(this, "是否要更新", "有更新,版本:"+realname+"\n日志:\n"+log);
                         qDebug() << "newversion:" << version;
                         if (rb == QMessageBox::Yes) {
                             // "是"
@@ -154,7 +157,7 @@ void MainWindow::fetchversion()
                         this->show();
                         this->hide();
                         QMessageBox::StandardButton rb;
-                        rb = QMessageBox::question(this, "是否要更新", "有更新\n版本:"+version+"\n日志:\n"+log);
+                        rb = QMessageBox::question(this, "是否要更新", " 您的版本过于老旧,请使用最新版本\n版本:"+realname+"\n日志:\n"+log);
                         qDebug() << "newversion:" << version;
                         if (rb == QMessageBox::Yes) {
                             // "是"
@@ -267,4 +270,9 @@ void MainWindow::changehost(){
 void MainWindow::on_pushButton_sure_clicked()
 {
     this->hide();
+}
+
+void MainWindow::on_pushButton_cancel_clicked()
+{
+    this->close();
 }
