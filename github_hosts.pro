@@ -1,16 +1,19 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2024-02-13T13:19:54
+# Project created by QtCreator 2024-02-08T08:03:24
 #
 #-------------------------------------------------
 
 QT       += core gui
-QT+=network
+QT +=network
+
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = github_hosts_update
+TARGET = github_hosts
 TEMPLATE = app
+RC_ICONS += logo.ico
+RC_FILE += mainrc.rc
 
 # The following define makes your compiler emit warnings if you use
 # any feature of Qt which as been marked as deprecated (the exact warnings
@@ -26,10 +29,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 
 SOURCES += \
         main.cpp \
-        mainwindow.cpp
+        mainwindow.cpp \
+    form_update.cpp
 
 HEADERS += \
-        mainwindow.h
+        mainwindow.h \
+    form_update.h
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    form_update.ui
+
+RESOURCES += \
+    icon.qrc
+
+DISTFILES += \
+    UAC.manifest \
+    mainrc.rc
+
+

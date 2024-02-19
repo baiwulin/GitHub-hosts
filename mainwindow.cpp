@@ -21,9 +21,12 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     if(settings->value("main/checkbox").toString()=="true"){
         ui->checkBox->setChecked(true);
     }
+    if(settings->value("main/checkbox1").toString()=="true"){
+        ui->checkBox_2->setChecked(true);
+    }
     my_trayIcon = new QSystemTrayIcon(this);
     trayMenu = new QMenu(this);
-    my_trayIcon->setIcon(icon);
+    my_trayIcon->setIcon(icon);   
     // 添加操作到菜单
     QAction *action1 = trayMenu->addAction("显示/隐藏");
      connect(action1, &QAction::triggered, this, &MainWindow::minimizeWindow);
@@ -44,7 +47,21 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     manager_version=new QNetworkAccessManager(this);
     manager_update=new QNetworkAccessManager(this);
     manager_host=new QNetworkAccessManager(this);
-    timer_version = new QTimer(this);
+
+    //删除更新残留文件
+    QDir dir("c:\\gitub_host_update");
+    if (dir.exists()) {
+            // 删除文件夹及其内容
+            if (dir.removeRecursively()) {
+                qDebug() << "Folder removed successfully.";
+            } else {
+                qDebug() << "Failed to remove folder.";
+            }
+        } else {
+            qDebug() << "Folder does not exist.";
+        }
+
+    timer_version = new QTimer(this);    
     connect( timer_version, &QTimer::timeout, this, &MainWindow::fetchversion);
     timer_version->start(3 * 3600 * 1000);
     MainWindow::fetchversion();
@@ -86,7 +103,7 @@ void MainWindow::closeWindow()
     this->close();
 }
 
-//复选框槽函数
+//开机自启复选框槽函数
 void MainWindow::on_checkBox_clicked()
 {
     if(ui->checkBox->isChecked()){
@@ -101,6 +118,36 @@ void MainWindow::on_checkBox_clicked()
     }
 
 }
+
+//是否启用复选框槽函数
+void MainWindow::on_checkBox_2_clicked()
+{
+    QString myhost=settings->value("main/host").toString().replace("[charge]"," \n");
+    QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
+    file_host.open(QIODevice::ReadOnly | QIODevice::Text);
+    QString systemhost=QTextStream(&file_host).readAll();
+    file_host.close();
+    int startIndex = systemhost.indexOf("# GitHub520 Host Start");
+    int endIndex = systemhost.indexOf("# GitHub520 Host End");
+    if(ui->checkBox_2->isChecked()){
+        settings->setValue("main/checkbox1","true");
+        if(startIndex == -1 || endIndex == -1){
+            systemhost.append(myhost);
+        }
+    }else{
+        settings->setValue("main/checkbox1","false");
+        if (startIndex != -1 || endIndex != -1){
+            settings->setValue("main/host",systemhost.mid(startIndex, endIndex - startIndex + 22).replace("\n","[charge]"));
+            systemhost.remove(startIndex, endIndex - startIndex + 22);            
+        }
+    }
+    file_host.open(QIODevice::WriteOnly | QIODevice::Text);
+    QTextStream out(&file_host);
+    out << systemhost.toStdString().c_str();
+    file_host.close();
+    MainWindow::changehost();
+}
+
 
 //开机自启函数
 void MainWindow::setAutoStart(bool enable)
@@ -148,7 +195,10 @@ void MainWindow::fetchversion()
                         if (rb == QMessageBox::Yes) {
                             // "是"
                             this->show();
-                            MainWindow::fetchupdate();
+                            Form_update fu;
+                            fu.setWindowTitle("更新中...");
+                            fu.exec();
+                            this->close();
                         }else{
                             this->show();
                         }
@@ -162,7 +212,10 @@ void MainWindow::fetchversion()
                         if (rb == QMessageBox::Yes) {
                             // "是"
                              this->show();
-                             MainWindow::fetchupdate();
+                            Form_update fu;
+                            fu.setWindowTitle("更新中...");
+                            fu.exec();
+                            this->close();
                         }else{
                              this->show();
                              this->close();
@@ -177,7 +230,8 @@ void MainWindow::fetchversion()
             qDebug() << "Error fetching data:" << reply->errorString();
         }
         reply->deleteLater();
-    });    
+    });
+
 }
 
 //更新调用函数
@@ -218,53 +272,57 @@ void MainWindow::fetchupdate(){
 
 //host更新函数
 void MainWindow::changehost(){
-    QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
-    file_host.open(QIODevice::ReadOnly | QIODevice::Text);
-    QString systemhost=QTextStream(&file_host).readAll();
-    QNetworkRequest request(QUrl("https://cs.baiwulin.com/app/githubHosts/hosts"));
-    request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);   //使能重定向
-    QNetworkReply *reply = manager_host->get(request);
-    connect(reply, &QNetworkReply::finished, [reply,this,systemhost]()mutable {
-        QByteArray responseData = reply->readAll();
-        QString newhost = QString::fromUtf8(responseData);
-        QString fileName = "host.bak";
-        QString baseName = fileName;
-        int counter = 1;
-        while (QFile::exists(QCoreApplication::applicationDirPath()+"/"+fileName)) {
-               fileName = QString("%1%2.bak").arg(baseName.left(baseName.lastIndexOf("."))).arg(counter++);
-           }
-        QFile file(QCoreApplication::applicationDirPath()+"/"+fileName);
-        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-               QTextStream stream(&file);
-               stream << systemhost;
-               file.close();
-               qDebug() << "backup host to file:" << fileName;
+    if(ui->checkBox_2->isChecked()){
+        QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
+        file_host.open(QIODevice::ReadOnly | QIODevice::Text);
+        QString systemhost=QTextStream(&file_host).readAll();
+        QNetworkRequest request(QUrl("https://cs.baiwulin.com/app/githubHosts/hosts"));
+        request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);   //使能重定向
+        QNetworkReply *reply = manager_host->get(request);
+        connect(reply, &QNetworkReply::finished, [reply,this,systemhost]()mutable {
+            QByteArray responseData = reply->readAll();
+            if(responseData.isEmpty()==false){
+                QString newhost = QString::fromUtf8(responseData);
+                QString fileName = "host.bak";
+                QString baseName = fileName;
+                int counter = 1;
+                while (QFile::exists(QCoreApplication::applicationDirPath()+"/"+fileName)) {
+                       fileName = QString("%1%2.bak").arg(baseName.left(baseName.lastIndexOf("."))).arg(counter++);
+                   }
+                QFile file(QCoreApplication::applicationDirPath()+"/"+fileName);
+                if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                       QTextStream stream(&file);
+                       stream << systemhost;
+                       file.close();
+                       qDebug() << "backup host to file:" << fileName;
 
-               int startIndex = systemhost.indexOf("# GitHub520 Host Start");
-               int endIndex = systemhost.indexOf("# GitHub520 Host End");
-               if (startIndex == -1 || endIndex == -1){
-               systemhost.append("\n").append(newhost);
-               }else{
-                   systemhost.replace(startIndex, endIndex - startIndex + 22, newhost);
-               }
-               QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
-               if (file_host.open(QIODevice::WriteOnly | QIODevice::Text)){
-                   QTextStream streamh(&file_host);
-                   streamh << systemhost;
-                   file_host.close();
+                       int startIndex = systemhost.indexOf("# GitHub520 Host Start");
+                       int endIndex = systemhost.indexOf("# GitHub520 Host End");
+                       if (startIndex == -1 || endIndex == -1){
+                       systemhost.append("\n").append(newhost);
+                       }else{
+                           systemhost.replace(startIndex, endIndex - startIndex + 22, newhost);
+                       }
+                       QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
+                       if (file_host.open(QIODevice::WriteOnly | QIODevice::Text)){
+                           QTextStream streamh(&file_host);
+                           streamh << systemhost;
+                           file_host.close();
 
-                   qDebug() << "sucess to change host" ;
-               }else{
-                   qDebug() << "fail to change host" ;
-               }
+                           qDebug() << "sucess to change host" ;
+                       }else{
+                           qDebug() << "fail to change host" ;
+                       }
 
-           } else {
-               qDebug() << "Failed to backup host to file:" << fileName;
-           }
-        file.close();
-        reply->deleteLater();
-    });
-    file_host.close();
+                   } else {
+                       qDebug() << "Failed to backup host to file:" << fileName;
+                   }
+                file.close();
+                reply->deleteLater();
+            }
+        });
+        file_host.close();
+    }
 }
 
 void MainWindow::on_pushButton_sure_clicked()

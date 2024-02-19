@@ -32,6 +32,9 @@
 #include <QTimer>
 #include <QDebug>
 #include<qdebug.h>
+
+#include<form_update.h>//引用第二界面
+
 namespace Ui {
 class MainWindow;
 }
@@ -57,6 +60,8 @@ private slots:
     void on_pushButton_sure_clicked();
 
     void on_pushButton_cancel_clicked();
+
+    void on_checkBox_2_clicked();
 
 private:
     Ui::MainWindow *ui;
