@@ -1,5 +1,8 @@
 <RCC>
     <qresource prefix="/new/prefix1">
         <file>icon/logo.ico</file>
+        <file>icon/red.ico</file>
+        <file>icon/blue.ico</file>
+        <file>icon/green.ico</file>
     </qresource>
 </RCC>

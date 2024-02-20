@@ -35,6 +35,11 @@
 
 #include<form_update.h>//引用第二界面
 
+#include <QLabel>
+#include <QPixmap>//调整标签颜色
+
+#include <QCloseEvent>
+
 namespace Ui {
 class MainWindow;
 }
@@ -51,6 +56,7 @@ private slots:
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void minimizeWindow();
     void closeWindow();
+    void statusBar(int color,QString data);
     void on_checkBox_clicked();
     void fetchversion();
     void fetchupdate();
@@ -62,6 +68,8 @@ private slots:
     void on_pushButton_cancel_clicked();
 
     void on_checkBox_2_clicked();
+
+    void closeEvent(QCloseEvent *event);
 
 private:
     Ui::MainWindow *ui;

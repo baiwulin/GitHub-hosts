@@ -103,6 +103,27 @@ void MainWindow::closeWindow()
     this->close();
 }
 
+//状态栏函数
+void MainWindow::statusBar(int color, QString data)
+{
+    QPixmap color_0(":/new/prefix1/icon/red.ico");
+    QPixmap color_1(":/new/prefix1/icon/blue.ico");
+    QPixmap color_2(":/new/prefix1/icon/green.ico");
+    switch(color){
+    case 0:
+        ui->label_2->setPixmap(color_0);
+        break;
+    case 1:
+        ui->label_2->setPixmap(color_1);
+        break;
+    case 2:
+        ui->label_2->setPixmap(color_2);
+        qDebug()<<"color2";
+        break;
+    }
+    ui->label_5->setText(data);
+}
+
 //开机自启复选框槽函数
 void MainWindow::on_checkBox_clicked()
 {
@@ -138,7 +159,8 @@ void MainWindow::on_checkBox_2_clicked()
         settings->setValue("main/checkbox1","false");
         if (startIndex != -1 || endIndex != -1){
             settings->setValue("main/host",systemhost.mid(startIndex, endIndex - startIndex + 22).replace("\n","[charge]"));
-            systemhost.remove(startIndex, endIndex - startIndex + 22);            
+            systemhost.remove(startIndex, endIndex - startIndex + 22);
+            statusBar(0,QString("加速已禁用！！！"));
         }
     }
     file_host.open(QIODevice::WriteOnly | QIODevice::Text);
@@ -176,7 +198,7 @@ void MainWindow::fetchversion()
             QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
             if (!jsonDoc.isNull()) {
                 QJsonObject jsonObject = jsonDoc.object();
-                int version = jsonObject["version"].toInt();
+                int version = jsonObject["version"].toString().toInt();
                 QString log = jsonObject["log"].toString().replace("[change]", "\n");
                 QString realname = jsonObject["name"].toString();
                 bool force = jsonObject["force"].toBool();
@@ -185,7 +207,7 @@ void MainWindow::fetchversion()
                 qDebug()<<"\nlog:\n"<<log;
                 qDebug()<<"\nforce:\n"<<force;
 
-                if(version>1){
+                if(version>2){
                     if(force!=true){
                         this->show();
                         this->hide();
@@ -280,46 +302,57 @@ void MainWindow::changehost(){
         request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);   //使能重定向
         QNetworkReply *reply = manager_host->get(request);
         connect(reply, &QNetworkReply::finished, [reply,this,systemhost]()mutable {
-            QByteArray responseData = reply->readAll();
-            if(responseData.isEmpty()==false){
-                QString newhost = QString::fromUtf8(responseData);
-                QString fileName = "host.bak";
-                QString baseName = fileName;
-                int counter = 1;
-                while (QFile::exists(QCoreApplication::applicationDirPath()+"/"+fileName)) {
-                       fileName = QString("%1%2.bak").arg(baseName.left(baseName.lastIndexOf("."))).arg(counter++);
-                   }
-                QFile file(QCoreApplication::applicationDirPath()+"/"+fileName);
-                if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                       QTextStream stream(&file);
-                       stream << systemhost;
-                       file.close();
-                       qDebug() << "backup host to file:" << fileName;
-
-                       int startIndex = systemhost.indexOf("# GitHub520 Host Start");
-                       int endIndex = systemhost.indexOf("# GitHub520 Host End");
-                       if (startIndex == -1 || endIndex == -1){
-                       systemhost.append("\n").append(newhost);
-                       }else{
-                           systemhost.replace(startIndex, endIndex - startIndex + 22, newhost);
+            if (reply->error() == QNetworkReply::NoError) {
+                QByteArray responseData = reply->readAll();
+                if(responseData.isEmpty()==false){
+                    QString newhost = QString::fromUtf8(responseData);
+                    QString fileName = "host.bak";
+                    QString baseName = fileName;
+                    int counter = 1;
+                    while (QFile::exists(QCoreApplication::applicationDirPath()+"/"+fileName)) {
+                           fileName = QString("%1%2.bak").arg(baseName.left(baseName.lastIndexOf("."))).arg(counter++);
                        }
-                       QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
-                       if (file_host.open(QIODevice::WriteOnly | QIODevice::Text)){
-                           QTextStream streamh(&file_host);
-                           streamh << systemhost;
-                           file_host.close();
+                    QFile file(QCoreApplication::applicationDirPath()+"/"+fileName);
+                    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                           QTextStream stream(&file);
+                           stream << systemhost;
+                           file.close();
+                           qDebug() << "backup host to file:" << fileName;
 
-                           qDebug() << "sucess to change host" ;
-                       }else{
-                           qDebug() << "fail to change host" ;
+                           int startIndex = systemhost.indexOf("# GitHub520 Host Start");
+                           int endIndex = systemhost.indexOf("# GitHub520 Host End");
+                           if (startIndex == -1 || endIndex == -1){
+                           systemhost.append("\n").append(newhost);
+                           }else{
+                               systemhost.replace(startIndex, endIndex - startIndex + 22, newhost);
+                           }
+                           QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
+                           if (file_host.open(QIODevice::WriteOnly | QIODevice::Text)){
+                               QTextStream streamh(&file_host);
+                               streamh << systemhost;
+                               file_host.close();
+                               statusBar(2,QString("host 已更改..."));
+                               qDebug() << "sucess to change host" ;
+                           }else{
+                               qDebug() << "fail to change host" ;
+                               statusBar(0,QString("无权限更改host或更改错误！！！"));
+                           }
+
+                       } else {
+                           qDebug() << "Failed to backup host to file:" << fileName;
+                           statusBar(0,QString("备份host失败，请检查是否有权限！！！"));
                        }
+                    file.close();
+                    reply->deleteLater();
+                }else{
+                    statusBar(0,QString("未知的错误！！！"));
+                }
+            }else{
+                qDebug()<<"get host fail";
+                statusBar(0,QString("链接host源失败！！！"));
 
-                   } else {
-                       qDebug() << "Failed to backup host to file:" << fileName;
-                   }
-                file.close();
-                reply->deleteLater();
             }
+
         });
         file_host.close();
     }
@@ -333,4 +366,16 @@ void MainWindow::on_pushButton_sure_clicked()
 void MainWindow::on_pushButton_cancel_clicked()
 {
     this->close();
+}
+
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (event->spontaneous()) {
+            // 处理点击关闭按钮的情况
+            hide();
+            event->ignore();
+        } else {
+            // 处理其他方式关闭窗口的情况
+            event->accept();
+        }
 }

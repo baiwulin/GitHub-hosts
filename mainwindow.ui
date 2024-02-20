@@ -6,23 +6,31 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>397</width>
-    <height>254</height>
+    <width>403</width>
+    <height>255</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="mouseTracking">
+   <bool>false</bool>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>false</bool>
+  </property>
+  <property name="toolButtonStyle">
+   <enum>Qt::ToolButtonTextOnly</enum>
+  </property>
   <widget class="QWidget" name="centralWidget">
-   <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0">
-     <widget class="QLabel" name="label">
-      <property name="text">
-       <string>host源：</string>
-      </property>
-     </widget>
-    </item>
-    <item row="2" column="0">
+   <layout class="QGridLayout" name="gridLayout" rowstretch="1,0,0,0,0,0,0,0">
+    <item row="7" column="0" colspan="2">
      <widget class="QPushButton" name="pushButton_sure">
       <property name="cursor">
        <cursorShape>ArrowCursor</cursorShape>
@@ -32,7 +40,63 @@
       </property>
      </widget>
     </item>
-    <item row="2" column="1">
+    <item row="4" column="2">
+     <widget class="QLabel" name="label_7">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="QCheckBox" name="checkBox">
+      <property name="text">
+       <string>开机自启</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="2">
+     <widget class="QCheckBox" name="checkBox_2">
+      <property name="text">
+       <string>启用加速</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0" colspan="2">
+     <widget class="QLabel" name="label">
+      <property name="text">
+       <string>host源：</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="2" colspan="2">
+     <widget class="QComboBox" name="comboBox">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <item>
+       <property name="text">
+        <string>自动(推荐)</string>
+       </property>
+      </item>
+     </widget>
+    </item>
+    <item row="0" column="0">
+     <widget class="QLabel" name="label_2">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="pixmap">
+       <pixmap resource="icon.qrc">:/new/prefix1/icon/blue.ico</pixmap>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="2" colspan="2">
      <widget class="QPushButton" name="pushButton_cancel">
       <property name="cursor">
        <cursorShape>ArrowCursor</cursorShape>
@@ -51,29 +115,67 @@
       </property>
      </widget>
     </item>
-    <item row="1" column="1">
-     <widget class="QComboBox" name="comboBox">
-      <property name="enabled">
-       <bool>true</bool>
+    <item row="0" column="3">
+     <widget class="QLabel" name="label_3">
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
       </property>
-      <item>
-       <property name="text">
-        <string>推荐(默认)</string>
-       </property>
-      </item>
-     </widget>
-    </item>
-    <item row="0" column="0">
-     <widget class="QCheckBox" name="checkBox">
       <property name="text">
-       <string>开机自启</string>
+       <string/>
       </property>
      </widget>
     </item>
     <item row="0" column="1">
-     <widget class="QCheckBox" name="checkBox_2">
+     <widget class="QLabel" name="label_5">
       <property name="text">
-       <string>启用加速</string>
+       <string>启动服务中</string>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="2">
+     <widget class="QLabel" name="label_4">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="4">
+     <widget class="Line" name="line">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="label_6">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="label_8">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="2">
+     <widget class="QLabel" name="label_9">
+      <property name="text">
+       <string/>
       </property>
      </widget>
     </item>
@@ -84,13 +186,15 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>397</width>
+     <width>403</width>
      <height>23</height>
     </rect>
    </property>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
- <resources/>
+ <resources>
+  <include location="icon.qrc"/>
+ </resources>
  <connections/>
 </ui>

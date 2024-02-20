@@ -23,7 +23,7 @@ Form_update::Form_update(QWidget *parent) :
                 qDebug() << "type:" <<type;
                 qDebug()<<"\nurl:"<<url;
                 if(type=="auto"){
-                    QNetworkRequest request(QUrl("https://cs.baiwulin.com/app/githubHosts/update"));
+                    QNetworkRequest request(url);
                     QNetworkReply *reply_download = manager_download->get(request);
                     connect(reply_download, &QNetworkReply::downloadProgress, [=](qint64 bytesReceived, qint64 bytesTotal) {
                         if (bytesTotal > 0) {
@@ -40,7 +40,7 @@ Form_update::Form_update(QWidget *parent) :
                                 file.write(data); // 将数据写入文件
                                 file.close();
                                 QProcess process;
-                                QString command = "c:\\gitub_host_update\\up.exe -silent";
+                                QString command = "c:\\gitub_host_update\\up.exe /SILENT";
                                 QProcess::startDetached(command);
                                 this->close();
                             } else {
