@@ -4,5 +4,9 @@
         <file>icon/red.ico</file>
         <file>icon/blue.ico</file>
         <file>icon/green.ico</file>
+        <file>icon/f5.ico</file>
+        <file>icon/f52.ico</file>
+        <file>icon/f53.ico</file>
+        <file>icon/f54.ico</file>
     </qresource>
 </RCC>

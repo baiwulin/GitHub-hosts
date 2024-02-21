@@ -40,6 +40,8 @@
 
 #include <QCloseEvent>
 
+#include <QTime>
+
 namespace Ui {
 class MainWindow;
 }
@@ -56,6 +58,7 @@ private slots:
     void trayIconActivated(QSystemTrayIcon::ActivationReason reason);
     void minimizeWindow();
     void closeWindow();
+    void refreshhost();
     void statusBar(int color,QString data);
     void on_checkBox_clicked();
     void fetchversion();
@@ -71,9 +74,14 @@ private slots:
 
     void closeEvent(QCloseEvent *event);
 
+    void on_pushButton_clicked();
+
+    void myMsleep(int msec);
+
 private:
     Ui::MainWindow *ui;
     void setAutoStart(bool enable);
+    void setAutoStart2(bool enable);
     QSystemTrayIcon *my_trayIcon;
     QMenu *trayMenu;
     QSettings *settings;

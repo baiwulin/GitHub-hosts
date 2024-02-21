@@ -16,6 +16,7 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    qSetMessagePattern("[%{time yyyyMMdd hh:mm:ss.zzz}] %{message}");
     QIcon icon = QIcon(":/new/prefix1/icon/logo.ico");
     settings = new QSettings("setting.ini",QSettings::IniFormat);
     if(settings->value("main/checkbox").toString()=="true"){
@@ -30,8 +31,11 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     // 添加操作到菜单
     QAction *action1 = trayMenu->addAction("显示/隐藏");
      connect(action1, &QAction::triggered, this, &MainWindow::minimizeWindow);
-    QAction *action2 = trayMenu->addAction("退出");
-     connect(action2, &QAction::triggered, this, &MainWindow::closeWindow);
+    QAction *action2 = trayMenu->addAction("刷新hosts");
+     connect(action2, &QAction::triggered, this, &MainWindow::refreshhost);
+    QAction *action3 = trayMenu->addAction("退出");
+     connect(action3, &QAction::triggered, this, &MainWindow::closeWindow);
+
     // 将菜单设置为托盘图标的上下文菜单
     my_trayIcon->setContextMenu(trayMenu);
     connect(my_trayIcon, &QSystemTrayIcon::activated, this, &MainWindow::trayIconActivated);
@@ -103,6 +107,11 @@ void MainWindow::closeWindow()
     this->close();
 }
 
+void MainWindow::refreshhost()
+{
+    MainWindow::changehost();
+}
+
 //状态栏函数
 void MainWindow::statusBar(int color, QString data)
 {
@@ -170,9 +179,75 @@ void MainWindow::on_checkBox_2_clicked()
     MainWindow::changehost();
 }
 
-
 //开机自启函数
 void MainWindow::setAutoStart(bool enable)
+{
+    QString applicationPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
+    if (enable) {
+        QProcess process;
+        process.start("sc create Github_Hosts_Autostart binPath=\""+applicationPath+"\"");
+        process.waitForFinished();
+        if (process.exitStatus() == QProcess::NormalExit) {
+            // 进程正常退出
+            int exitCode = process.exitCode();
+            if (exitCode == 0) {
+                // 说明命令行执行成功
+            } else {
+                // 命令行执行失败
+            }
+        } else {
+            // 进程异常退出，可能发生了错误
+            qDebug() << "Error occurred: " << process.errorString();
+        }
+        process.start("sc config Github_Hosts_Autostart start= auto");
+        process.waitForFinished();
+        if (process.exitStatus() == QProcess::NormalExit) {
+            // 进程正常退出
+            int exitCode = process.exitCode();
+            if (exitCode == 0) {
+                // 说明命令行执行成功
+            } else {
+                // 命令行执行失败
+            }
+        } else {
+            // 进程异常退出，可能发生了错误
+            qDebug() << "Error occurred: " << process.errorString();
+        }
+        process.start("sc start Github_Hosts_Autostart"); // 替换为你要执行的命令
+        process.waitForFinished();
+        if (process.exitStatus() == QProcess::NormalExit) {
+            // 进程正常退出
+            int exitCode = process.exitCode();
+            if (exitCode == 0) {
+                // 说明命令行执行成功
+            } else {
+                // 命令行执行失败
+            }
+        } else {
+            // 进程异常退出，可能发生了错误
+            qDebug() << "Error occurred: " << process.errorString();
+        }
+    } else {
+        QProcess process;
+        process.start("sc delete Github_Hosts_Autostart");
+        process.waitForFinished();
+        if (process.exitStatus() == QProcess::NormalExit) {
+            // 进程正常退出
+            int exitCode = process.exitCode();
+            if (exitCode == 0) {
+                // 说明命令行执行成功
+            } else {
+                // 命令行执行失败
+            }
+        } else {
+            // 进程异常退出，可能发生了错误
+            qDebug() << "Error occurred: " << process.errorString();
+        }
+    }
+}
+
+//开机自启函数2
+void MainWindow::setAutoStart2(bool enable)
 {
     QString applicationName = QCoreApplication::applicationName();
     QString applicationPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
@@ -207,7 +282,7 @@ void MainWindow::fetchversion()
                 qDebug()<<"\nlog:\n"<<log;
                 qDebug()<<"\nforce:\n"<<force;
 
-                if(version>2){
+                if(version>4){
                     if(force!=true){
                         this->show();
                         this->hide();
@@ -378,4 +453,30 @@ void MainWindow::closeEvent(QCloseEvent *event)
             // 处理其他方式关闭窗口的情况
             event->accept();
         }
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    MainWindow::changehost();
+     QIcon ico_1(QPixmap(":/new/prefix1/icon/f52.ico"));
+     QIcon ico_2(QPixmap(":/new/prefix1/icon/f53.ico"));
+     QIcon ico_3(QPixmap(":/new/prefix1/icon/f54.ico"));
+     QIcon ico_4(QPixmap(":/new/prefix1/icon/f5.ico"));
+     ui->pushButton->setIcon(ico_1);
+     myMsleep(100);
+     ui->pushButton->setIcon(ico_2);
+     myMsleep(100);
+     ui->pushButton->setIcon(ico_3);
+     myMsleep(100);
+     ui->pushButton->setIcon(ico_4);
+
+
+}
+
+//延时函数 ms
+void MainWindow::myMsleep(int msec)
+{
+    QTime dieTime = QTime::currentTime().addMSecs(msec);
+    while( QTime::currentTime() < dieTime )
+        QCoreApplication::processEvents(QEventLoop::AllEvents, 100); //非阻塞式
 }

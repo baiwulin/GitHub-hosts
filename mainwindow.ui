@@ -25,6 +25,12 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
+  <property name="iconSize">
+   <size>
+    <width>20</width>
+    <height>20</height>
+   </size>
+  </property>
   <property name="toolButtonStyle">
    <enum>Qt::ToolButtonTextOnly</enum>
   </property>
@@ -115,16 +121,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="3">
-     <widget class="QLabel" name="label_3">
-      <property name="layoutDirection">
-       <enum>Qt::LeftToRight</enum>
-      </property>
-      <property name="text">
-       <string/>
-      </property>
-     </widget>
-    </item>
     <item row="0" column="1">
      <widget class="QLabel" name="label_5">
       <property name="text">
@@ -176,6 +172,49 @@
      <widget class="QLabel" name="label_9">
       <property name="text">
        <string/>
+      </property>
+     </widget>
+    </item>
+    <item row="0" column="3" alignment="Qt::AlignRight">
+     <widget class="QPushButton" name="pushButton">
+      <property name="enabled">
+       <bool>true</bool>
+      </property>
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Minimum" vsizetype="Ignored">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="whatsThis">
+       <string>立即刷新</string>
+      </property>
+      <property name="layoutDirection">
+       <enum>Qt::LeftToRight</enum>
+      </property>
+      <property name="autoFillBackground">
+       <bool>false</bool>
+      </property>
+      <property name="styleSheet">
+       <string notr="true">
+border-style:none;
+padding:11px;
+border-radius:3px;
+background:transparent;
+</string>
+      </property>
+      <property name="text">
+       <string/>
+      </property>
+      <property name="icon">
+       <iconset resource="icon.qrc">
+        <normaloff>:/new/prefix1/icon/f5.ico</normaloff>:/new/prefix1/icon/f5.ico</iconset>
+      </property>
+      <property name="iconSize">
+       <size>
+        <width>24</width>
+        <height>16</height>
+       </size>
       </property>
      </widget>
     </item>
