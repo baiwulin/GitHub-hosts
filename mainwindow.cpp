@@ -16,14 +16,15 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-    qSetMessagePattern("[%{time yyyyMMdd hh:mm:ss.zzz}] %{message}");
     QIcon icon = QIcon(":/new/prefix1/icon/logo.ico");
     settings = new QSettings("setting.ini",QSettings::IniFormat);
-    if(settings->value("main/checkbox").toString()=="true"){
+    if( QSettings("HKEY_CURRENT_USER\\Software\\github_hosts", QSettings::NativeFormat).value("checkbox").toString()=="true"){
         ui->checkBox->setChecked(true);
     }
-    if(settings->value("main/checkbox1").toString()=="true"){
+    if(QSettings("HKEY_CURRENT_USER\\Software\\github_hosts", QSettings::NativeFormat).value("checkbox1").toString()=="true"){
         ui->checkBox_2->setChecked(true);
+    }else{
+        statusBar(0,QString("加速已禁用！！！"));
     }
     my_trayIcon = new QSystemTrayIcon(this);
     trayMenu = new QMenu(this);
@@ -70,7 +71,7 @@ MainWindow::MainWindow(QWidget *parent) :QMainWindow(parent),
     timer_version->start(3 * 3600 * 1000);
     MainWindow::fetchversion();
     timer_host=new QTimer(this);
-    connect( timer_version, &QTimer::timeout, this, &MainWindow::changehost);
+    connect( timer_host, &QTimer::timeout, this, &MainWindow::changehost);
     timer_host->start(600 * 1000);
     MainWindow::changehost();
 }
@@ -137,12 +138,12 @@ void MainWindow::statusBar(int color, QString data)
 void MainWindow::on_checkBox_clicked()
 {
     if(ui->checkBox->isChecked()){
-        settings->setValue("main/checkbox","true");
+        QSettings("HKEY_CURRENT_USER\\Software\\github_hosts", QSettings::NativeFormat).setValue("checkbox", "true");
         setAutoStart(true);
         QMessageBox::information(nullptr, "Information", "设置成功");
     }
     else{
-        settings->setValue("main/checkbox","false");
+        QSettings("HKEY_CURRENT_USER\\Software\\github_hosts", QSettings::NativeFormat).setValue("checkbox", "false");
         setAutoStart(false);
         QMessageBox::information(nullptr, "Information", "取消成功");
     }
@@ -160,12 +161,12 @@ void MainWindow::on_checkBox_2_clicked()
     int startIndex = systemhost.indexOf("# GitHub520 Host Start");
     int endIndex = systemhost.indexOf("# GitHub520 Host End");
     if(ui->checkBox_2->isChecked()){
-        settings->setValue("main/checkbox1","true");
+        QSettings("HKEY_CURRENT_USER\\Software\\github_hosts", QSettings::NativeFormat).setValue("checkbox1", "true");
         if(startIndex == -1 || endIndex == -1){
             systemhost.append(myhost);
         }
     }else{
-        settings->setValue("main/checkbox1","false");
+        QSettings("HKEY_CURRENT_USER\\Software\\github_hosts", QSettings::NativeFormat).setValue("checkbox1", "false");
         if (startIndex != -1 || endIndex != -1){
             settings->setValue("main/host",systemhost.mid(startIndex, endIndex - startIndex + 22).replace("\n","[charge]"));
             systemhost.remove(startIndex, endIndex - startIndex + 22);
@@ -182,8 +183,19 @@ void MainWindow::on_checkBox_2_clicked()
 //开机自启函数
 void MainWindow::setAutoStart(bool enable)
 {
+    AutoStartThread* thread = new AutoStartThread(enable);
+        connect(thread, &AutoStartThread::finished, thread, &QObject::deleteLater);
+        connect(thread, &AutoStartThread::finished, this, [this,enable]() {
+            // 线程执行完成后的处理
+            qDebug() << "Auto start finished";
+        });
+        thread->start();
+}
+
+void AutoStartThread::run()
+{
     QString applicationPath = QDir::toNativeSeparators(QCoreApplication::applicationFilePath());
-    if (enable) {
+    if (m_enable) {
         QProcess process;
         process.start("sc create Github_Hosts_Autostart binPath=\""+applicationPath+"\"");
         process.waitForFinished();
@@ -264,7 +276,8 @@ void MainWindow::setAutoStart2(bool enable)
 
 void MainWindow::fetchversion()
 {
-    QNetworkRequest request(QUrl("https://cs.baiwulin.com/app/githubHosts/version"));
+    QNetworkRequest request(QUrl("https://api.baiwulin.com/osp/githubHosts/version"));
+    request.setHeader(QNetworkRequest::UserAgentHeader, "BWLClient");
     QNetworkReply *reply = manager_version->get(request);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         // 处理响应
@@ -273,7 +286,7 @@ void MainWindow::fetchversion()
             QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
             if (!jsonDoc.isNull()) {
                 QJsonObject jsonObject = jsonDoc.object();
-                int version = jsonObject["version"].toString().toInt();
+                int version = jsonObject["version"].toInt();
                 QString log = jsonObject["log"].toString().replace("[change]", "\n");
                 QString realname = jsonObject["name"].toString();
                 bool force = jsonObject["force"].toBool();
@@ -282,7 +295,7 @@ void MainWindow::fetchversion()
                 qDebug()<<"\nlog:\n"<<log;
                 qDebug()<<"\nforce:\n"<<force;
 
-                if(version>4){
+                if(version>5){
                     if(force!=true){
                         this->show();
                         this->hide();
@@ -333,7 +346,8 @@ void MainWindow::fetchversion()
 
 //更新调用函数
 void MainWindow::fetchupdate(){
-    QNetworkRequest request(QUrl("https://cs.baiwulin.com/app/githubHosts/update"));
+    QNetworkRequest request(QUrl("https://api.baiwulin.com/osp/githubHosts/update"));
+    request.setHeader(QNetworkRequest::UserAgentHeader, "BWLClient");
     QNetworkReply *reply = manager_version->get(request);
     connect(reply, &QNetworkReply::finished, [reply,this]() {
         // 处理响应
@@ -369,65 +383,117 @@ void MainWindow::fetchupdate(){
 
 //host更新函数
 void MainWindow::changehost(){
+    QNetworkRequest request_list(QUrl("https://api.baiwulin.com/osp/githubHosts/list"));
+    request_list.setHeader(QNetworkRequest::UserAgentHeader, "BWLClient");
+     QNetworkReply *reply_list = manager_host->get(request_list);
+    connect(reply_list, &QNetworkReply::finished, [this,reply_list]()mutable {
+        QByteArray responseData_list = reply_list->readAll();
+        QJsonDocument jsonDoc_list = QJsonDocument::fromJson(responseData_list);
+        if(!jsonDoc_list.isNull()){
+            QJsonArray jsonArray_list = jsonDoc_list.array();
+            for (const QJsonValue &value : jsonArray_list) {
+                // 判断是否为JsonObject
+                if (value.isObject()) {
+                    // 获取JsonObject
+                    QJsonObject jsonObject = value.toObject();
+
+                    // 从JsonObject中获取name
+                    QString name = jsonObject["name"].toString();
+
+                    // 将name添加到ComboBox中
+                    ui->comboBox->addItem(name);
+                }
+            }
+
+        }
+    });
     if(ui->checkBox_2->isChecked()){
         QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
         file_host.open(QIODevice::ReadOnly | QIODevice::Text);
         QString systemhost=QTextStream(&file_host).readAll();
-        QNetworkRequest request(QUrl("https://cs.baiwulin.com/app/githubHosts/hosts"));
+        QNetworkRequest request(QUrl("https://api.baiwulin.com/osp/githubHosts/auto"));
+        request.setHeader(QNetworkRequest::UserAgentHeader, "BWLClient");
         request.setAttribute(QNetworkRequest::FollowRedirectsAttribute, true);   //使能重定向
         QNetworkReply *reply = manager_host->get(request);
         connect(reply, &QNetworkReply::finished, [reply,this,systemhost]()mutable {
             if (reply->error() == QNetworkReply::NoError) {
                 QByteArray responseData = reply->readAll();
                 if(responseData.isEmpty()==false){
-                    QString newhost = QString::fromUtf8(responseData);
-                    QString fileName = "host.bak";
-                    QString baseName = fileName;
-                    int counter = 1;
-                    while (QFile::exists(QCoreApplication::applicationDirPath()+"/"+fileName)) {
-                           fileName = QString("%1%2.bak").arg(baseName.left(baseName.lastIndexOf("."))).arg(counter++);
-                       }
-                    QFile file(QCoreApplication::applicationDirPath()+"/"+fileName);
-                    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
-                           QTextStream stream(&file);
-                           stream << systemhost;
-                           file.close();
-                           qDebug() << "backup host to file:" << fileName;
+                    QJsonDocument jsonDoc = QJsonDocument::fromJson(responseData);
+                    if (!jsonDoc.isNull()) {
+                        QJsonObject jsonObject = jsonDoc.object();
+                        int status = jsonObject["status"].toInt();
+                        QString url= jsonObject["url"].toString();
+                        if(status==1){
+                            QNetworkRequest requestHosts;
+                            requestHosts.setUrl(QUrl(url));
+                            requestHosts.setHeader(QNetworkRequest::UserAgentHeader, "BWLClient");
+                            QNetworkReply *reply_hosts = manager_host->get(requestHosts);
+                            connect(reply_hosts, &QNetworkReply::finished, [reply_hosts,this,systemhost]()mutable {
+                                if (reply_hosts->error() == QNetworkReply::NoError) {
+                                    QByteArray responseData_host = reply_hosts->readAll();
+                                    if(responseData_host.isEmpty()==false){
+                                        QString newhost = QString::fromUtf8(responseData_host);
+                                        QString fileName = "host.bak";
+                                        QString baseName = fileName;
+                                        int counter = 1;
+                                        while (QFile::exists(QCoreApplication::applicationDirPath()+"/"+fileName)) {
+                                               fileName = QString("%1%2.bak").arg(baseName.left(baseName.lastIndexOf("."))).arg(counter++);
+                                           }
+                                        QFile file(QCoreApplication::applicationDirPath()+"/"+fileName);
+                                        if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+                                               QTextStream stream(&file);
+                                               stream << systemhost;
+                                               file.close();
+                                               qDebug() << "backup host to file:" << fileName;
 
-                           int startIndex = systemhost.indexOf("# GitHub520 Host Start");
-                           int endIndex = systemhost.indexOf("# GitHub520 Host End");
-                           if (startIndex == -1 || endIndex == -1){
-                           systemhost.append("\n").append(newhost);
-                           }else{
-                               systemhost.replace(startIndex, endIndex - startIndex + 22, newhost);
-                           }
-                           QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
-                           if (file_host.open(QIODevice::WriteOnly | QIODevice::Text)){
-                               QTextStream streamh(&file_host);
-                               streamh << systemhost;
-                               file_host.close();
-                               statusBar(2,QString("host 已更改..."));
-                               qDebug() << "sucess to change host" ;
-                           }else{
-                               qDebug() << "fail to change host" ;
-                               statusBar(0,QString("无权限更改host或更改错误！！！"));
-                           }
+                                               int startIndex = systemhost.indexOf("# GitHub520 Host Start");
+                                               int endIndex = systemhost.indexOf("# GitHub520 Host End");
+                                               if (startIndex == -1 || endIndex == -1){
+                                               systemhost.append("\n").append(newhost);
+                                               }else{
+                                                   systemhost.replace(startIndex, endIndex - startIndex + 22, newhost);
+                                               }
+                                               QFile file_host(QString("C:/Windows/System32/drivers/etc/hosts"));
+                                               if (file_host.open(QIODevice::WriteOnly | QIODevice::Text)){
+                                                   QTextStream streamh(&file_host);
+                                                   streamh << systemhost;
+                                                   file_host.close();
+                                                   statusBar(2,QString("host 已更改..."));
+                                                   qDebug() << "sucess to change host" ;
+                                               }else{
+                                                   qDebug() << "fail to change host" ;
+                                                   statusBar(0,QString("无权限更改host或更改错误！！！"));
+                                               }
 
-                       } else {
-                           qDebug() << "Failed to backup host to file:" << fileName;
-                           statusBar(0,QString("备份host失败，请检查是否有权限！！！"));
-                       }
-                    file.close();
-                    reply->deleteLater();
+                                           } else {
+                                               qDebug() << "Failed to backup host to file:" << fileName;
+                                               statusBar(0,QString("备份host失败，请检查是否有权限！！！"));
+                                           }
+                                        file.close();
+                                        reply_hosts->deleteLater();
+                                    }else{
+                                        statusBar(0,QString("未知的错误！！！"));
+                                    }
+                                }else{
+                                    qDebug()<<"get host fail";
+                                    statusBar(0,QString("链接host源失败！！！"));
+
+                                }
+                            });
+                        }else{
+                            ui->comboBox->setItemData(0, QVariant(0), Qt::UserRole - 1);
+                            ui->comboBox->insertItem(0, "自动(暂不可用，请手动换源)");
+                        }
+                    }
                 }else{
                     statusBar(0,QString("未知的错误！！！"));
                 }
             }else{
                 qDebug()<<"get host fail";
                 statusBar(0,QString("链接host源失败！！！"));
-
             }
-
+            reply->deleteLater();
         });
         file_host.close();
     }

@@ -9,6 +9,7 @@ QT       += core gui
 QT +=network
 
 
+
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = github_hosts
@@ -48,4 +49,4 @@ DISTFILES += \
     UAC.manifest \
     mainrc.rc
 
-
+CONFIG += utf8_output

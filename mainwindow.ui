@@ -186,6 +186,9 @@
         <verstretch>0</verstretch>
        </sizepolicy>
       </property>
+      <property name="cursor">
+       <cursorShape>PointingHandCursor</cursorShape>
+      </property>
       <property name="whatsThis">
        <string>立即刷新</string>
       </property>

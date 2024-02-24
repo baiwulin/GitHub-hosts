@@ -28,6 +28,7 @@
 
 #include <QJsonDocument>//josn处理
 #include <QJsonObject>
+#include <QJsonArray>
 
 #include <QTimer>
 #include <QDebug>
@@ -41,6 +42,9 @@
 #include <QCloseEvent>
 
 #include <QTime>
+#include <QThread>//多线程操作。。。。
+
+#include <QTextCodec>
 
 namespace Ui {
 class MainWindow;
@@ -90,6 +94,17 @@ private:
     QNetworkAccessManager *manager_version;
     QNetworkAccessManager *manager_update;
     QNetworkAccessManager *manager_host;
+};
+
+class AutoStartThread : public QThread
+{
+public:
+    AutoStartThread(bool enable) : m_enable(enable) {}
+
+protected:
+    void run() override;
+private:
+    bool m_enable;
 };
 
 #endif // MAINWINDOW_H
